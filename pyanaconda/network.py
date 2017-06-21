@@ -1288,16 +1288,18 @@ def write_hostname(rootpath, ksdata, overwrite=False):
 
 def disable_ipv6_on_target_system(rootpath):
     """Disable ipv6 if noipv6 boot option is set and all ethernet devices ignore ipv6"""
-    if 'noipv6' in flags.cmdline:
-        for devname in nm.nm_devices():
-            if nm.nm_device_type_is_ethernet(devname):
-                try:
-                    ipv6_method = nm.nm_device_setting_value(devname, "ipv6", "method")
-                except nm.MultipleSettingsFoundError as e:
-                    log.debug("%s when getting ipv6 method of %s", e, devname)
-                    ipv6_method = None
-                if ipv6_method != "ignore":
-                    return
+    if 'noipv6' not in flags.cmdline:
+      return
+
+    for devname in nm.nm_devices():
+        if nm.nm_device_type_is_ethernet(devname):
+            try:
+                ipv6_method = nm.nm_device_setting_value(devname, "ipv6", "method")
+            except nm.MultipleSettingsFoundError as e:
+                log.debug("%s when getting ipv6 method of %s", e, devname)
+                ipv6_method = None
+            if ipv6_method != "ignore":
+                return
     log.info('disabling ipv6 on target system')
     cfgfile = os.path.normpath(rootpath + ipv6ConfFile)
     with open(cfgfile, "a") as f:
